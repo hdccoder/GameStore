@@ -19,6 +19,21 @@ app.get('/api/videogames', async (req, res , next) => {
  }
 })
 
+app.get('/api/boardgames', async (req, res, next) => {
+    try {
+        const SQL = `
+        SELECT *
+        FROM boardgames
+        `
+        const response = await client.query(SQL)
+        console.log(response.rows)
+        res.send(response.rows)
+
+    } catch (error) {
+        next(error)
+    }
+})
+
 
 const start = async () => {
     await client.connect()
@@ -71,7 +86,7 @@ const start = async () => {
     await client.query(SQL)
     console.log('tables created and data seeded')
 
-    const port = process.env.PORT || 3099;
+    const port = process.env.PORT || 3097;
     app.listen(port, () => {
         console.log(`listening on port ${port}`)
     })
