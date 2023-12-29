@@ -1,8 +1,11 @@
 const pg = require('pg')
 const client = new pg.Client('postgres://localhost/gamestore')
-
+const cors = require('cors')
 const express = require('express')
+const { error } = require('console')
 const app = express()
+
+app.use(cors())
 
 app.get('/api/videogames', async (req, res , next) => {
  try {
@@ -34,6 +37,73 @@ app.get('/api/boardgames', async (req, res, next) => {
     }
 })
 
+app.get('/api/videogames/:id', async (req,res,next) => {
+    try {
+        const SQL = `
+        SELECT *
+        FROM videogames
+        WHERE id = $1
+        `
+        const response = await client.query(SQL, [req.params.id])
+        if(!response.rows.length){
+            next({
+                name: "id error",
+                message: `game with ${req.params.id} not found`
+            })
+        } else{
+            res.send(response.rows[0])
+        }
+    } catch (error) {
+        next(error)
+    }
+})
+
+app.get('/api/boardgames/:id', async (req,res,next) => {
+    try {
+        const SQL = `
+        SELECT *
+        FROM boardgames
+        WHERE id = $1
+        `
+        const response = await client.query(SQL, [req.params.id])
+        
+        if(!response.rows.length){
+            next({
+                name: "id error",
+                message: `game with ${req.params.id} not found`
+            })
+        } else{
+            res.send(response.rows[0])
+        }
+        
+        
+    } catch (error) {
+        next(error)
+    }
+})
+
+app.delete('/api/videogames/:id', async (req, res, next) => {
+    try {
+        const SQL = `
+        DELETE
+        FROM videogames
+        WHERE id = $id
+        `
+        const response = await client.query(SQL,[req.params.id])
+        res.sendStatus(204)
+    } catch (error) {
+        next(error)
+    }
+})
+
+app.use((error,req,res,next) => {
+    res.status(500)
+    res.send(error)
+})
+
+app.use('*', (req, res, next) =>{
+    res.send('Congradulations you have reached the route to nowhere!!!')
+})
 
 const start = async () => {
     await client.connect()
@@ -86,7 +156,7 @@ const start = async () => {
     await client.query(SQL)
     console.log('tables created and data seeded')
 
-    const port = process.env.PORT || 3097;
+    const port = process.env.PORT || 3092;
     app.listen(port, () => {
         console.log(`listening on port ${port}`)
     })
