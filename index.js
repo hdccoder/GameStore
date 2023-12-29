@@ -82,15 +82,47 @@ app.get('/api/boardgames/:id', async (req,res,next) => {
     }
 })
 
-app.delete('/api/videogames/:id', async (req, res, next) => {
+app.delete('/api/videogames/:id', async (req,res,next) => {
+   
+    try {
+        const SQL = `
+            DELETE
+            FROM videogames
+            WHERE id = $1
+        `
+        const response = await client.query(SQL, [req.params.id])
+        res.sendStatus(204)
+    } catch (error) {
+        next(error)
+    }
+
+})
+
+app.delete('/api/boardgames/:id', async (req,res,next) => {
     try {
         const SQL = `
         DELETE
-        FROM videogames
-        WHERE id = $id
+        FROM boardgames
+        WHERE id = $1
         `
-        const response = await client.query(SQL,[req.params.id])
+        const response = await client.query(SQL, [req.params.id])
         res.sendStatus(204)
+    } catch (error) {
+        next(error)
+    }
+
+})
+
+app.post('/api/videogames', async(req,res,next) => {
+    console.log(req.body)
+    try {
+        let SQL = `
+        INSERT INTO videogames(name, year, publisher, platform, rating, img)
+        VALUES($1, $2, $3, $4, $5, $6)
+        RETURNING *
+        `
+        let response = await client.query(SQL, [req.body.name, req.body.year, req.body.publisher, req.body.platform, req.body,rating, req.body.img])
+        res.send(response.rows[0])
     } catch (error) {
         next(error)
     }
@@ -156,7 +188,7 @@ const start = async () => {
     await client.query(SQL)
     console.log('tables created and data seeded')
 
-    const port = process.env.PORT || 3092;
+    const port = process.env.PORT || 3088;
     app.listen(port, () => {
         console.log(`listening on port ${port}`)
     })
