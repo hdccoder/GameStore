@@ -121,7 +121,54 @@ app.post('/api/videogames', async(req,res,next) => {
         VALUES($1, $2, $3, $4, $5, $6)
         RETURNING *
         `
-        let response = await client.query(SQL, [req.body.name, req.body.year, req.body.publisher, req.body.platform, req.body,rating, req.body.img])
+        let response = await client.query(SQL, [req.body.name, req.body.year, req.body.publisher, req.body.platform, req.body.rating, req.body.img])
+        res.send(response.rows[0])
+    } catch (error) {
+        next(error)
+    }
+})
+
+app.post('/api/boardgames', async(req,res,next) => {
+    console.log(req.body)
+    try {
+        let SQL = `
+        INSERT INTO boardgames (name, players, age, price, playingtime, img)
+        VALUES($1, $2, $3, $4, $5, $6)
+        RETURNING *
+        `
+        let response = await client.query(SQL, [req.body.name, req.body.players, req.body.age, req.body.price, req.body.playingtime, req.body.img])
+        res.send(response.rows[0])
+    } catch (error) {
+        next(error)
+    }
+})
+
+app.put('/api/videogames/:id', async (req,res,next) => {
+    try {
+        const SQL = `
+        UPDATE videogames
+        SET name = $1, year = $2, publisher = $3, platform = $4, rating = $5, img = $6
+        WHERE id = $7
+        RETURNING *
+        `
+
+        const response =  await client.query(SQL, [req.body.name, req.body.year, req.body.publisher, req.body.platform, req.body.rating, req.body.img, req.params.id])
+        res.send(response.rows[0])
+    } catch (error) {
+        next(error)
+    }
+})
+
+app.put('/api/boardgames/:id', async (req,res,next) => {
+    try {
+        const SQL = `
+        UPDATE boardgames
+        SET name = $1, players = $2, age = $3, price = $4, playingtime = $5, img = $6
+        WHERE id = $7
+        RETURNING *
+        `
+
+        const response =  await client.query(SQL, [req.body.name, req.body.players, req.body.age, req.body.price, req.body.playingtime, req.body.img, req.params.id])
         res.send(response.rows[0])
     } catch (error) {
         next(error)
@@ -188,7 +235,7 @@ const start = async () => {
     await client.query(SQL)
     console.log('tables created and data seeded')
 
-    const port = process.env.PORT || 3088;
+    const port = process.env.PORT || 3000;
     app.listen(port, () => {
         console.log(`listening on port ${port}`)
     })
